@@ -2,6 +2,7 @@
 import pipes
 import fcntl, termios
 import os
+import sys
 XDHISTSIZE = int(os.environ.get('XDHISTSIZE') or 32)
 HOME = os.path.expanduser('~')
 XDHISTFILE = os.path.join(HOME,'.xd_history')
@@ -29,8 +30,16 @@ def readHistory():
             hist = fd.readlines()
     except IOError:
         pass
-    print(hist)
     return hist
+
+def printHistory(hist):
+    'print the history to shell'
+    if len(hist) == 0:
+        print('have no cd history\n')
+    else:
+        for h in hist:
+            # print('%s.' + h.replace('\n','') %(hist.index(h)))
+            print("{num}.{path}".format(num=hist.index(h),path=h.replace('\n','')))
 
 def updateHistory(h):
     'update the xd_history'
@@ -43,6 +52,8 @@ def updateHistory(h):
 
 def updateList(h):
     paths = readHistory()
+    if h in paths:
+        paths.remove(h)
     paths.insert(0,h)
     if len(paths) > XDHISTSIZE:
         paths.pop()
@@ -51,15 +62,13 @@ def updateList(h):
 def hackCd(dest):
     # use of this means that it only works in an interactive session
     # (and if the user types while it runs they could insert characters between the characters in 'text'!)
-    s = pipes.quote(dest)
-    t = "cd" + s + "\n"
+    t = "cd " + dest
     for c in t:
         fcntl.ioctl(1, termios.TIOCSTI, c)
 
 def getFullPath():
-    os.environ.get('PWD')
     pwd = os.environ.get('PWD') or os.getcwd()
-    print(pwd)
+    return pwd
 
 def addPath(path, hist):
     hist.insert(0,path)
@@ -71,15 +80,26 @@ def addPath(path, hist):
         pass
 
 
-def removeOld():
-    'remove the old path'
+def parsePath(s):
+    if  s[0] == '/':
+        return s
+    pwd = getFullPath() + '/' + s
+    return pwd
+
+def main():
+    tty = open('/dev/tty','w')
+    if len(sys.argv) <= 1:
+        hist = readHistory()
+        printHistory(hist)
+        num = raw_input('input the num(0):')
+        hackCd(hist[int(num)])
+    else:
+        p = parsePath(sys.argv[1])
+        print(p)
+        print(os.path.isdir(p))
+        if os.path.isdir(p):
+            p = os.path.normpath(p)
+        print(p)
 
 if __name__ == "__main__":
-    test()
-    getFullPath()
-    print(os.getcwd())
-
-    addHistory('first')
-    addHistory('second')
-    updateHistory('zero')
-    # readHistory()
+    main()
