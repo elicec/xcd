@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import pipes
 import fcntl, termios
 import os
 import sys
@@ -25,6 +24,7 @@ def addHistory(h):
 
 def readHistory():
     'read the xd_history'
+    hist = ['']
     try:
         with open(XDHISTFILE,'r') as fd:
             hist = fd.readlines()
@@ -62,6 +62,8 @@ def updateList(h):
 def hackCd(dest):
     # use of this means that it only works in an interactive session
     # (and if the user types while it runs they could insert characters between the characters in 'text'!)
+    if dest.replace('\n','') == getFullPath():
+        return
     t = "cd " + dest
     for c in t:
         fcntl.ioctl(1, termios.TIOCSTI, c)
@@ -87,19 +89,25 @@ def parsePath(s):
     return pwd
 
 def main():
-    tty = open('/dev/tty','w')
     if len(sys.argv) <= 1:
+        n = 0
         hist = readHistory()
         printHistory(hist)
         num = raw_input('input the num(0):')
-        hackCd(hist[int(num)])
+        try:
+            n = int(num)
+        except ValueError:
+            pass
+        hackCd(hist[n])
+        updateHistory(hist[n])
     else:
         p = parsePath(sys.argv[1])
-        print(p)
-        print(os.path.isdir(p))
         if os.path.isdir(p):
-            p = os.path.normpath(p)
-        print(p)
+            p = os.path.normpath(p) + '\n'
+            hackCd(p)
+            updateHistory(p)
+        else:
+            print('invalid path')
 
 if __name__ == "__main__":
     main()
