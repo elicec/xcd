@@ -4,16 +4,20 @@ import os
 import sys
 XDHISTSIZE = int(os.environ.get('XDHISTSIZE') or 32)
 HOME = os.path.expanduser('~')
-XDHISTFILE = os.path.join(HOME,'.xd_history')
-def test():
-    'Main func entry'
-    # his = commands.getoutput('date')
-    # print(his)
-    # (status, output) = commands.getstatusoutput('cd /home/')
-    # his1 = os.system('cd /home')
-    # print(status,output)
-    # subprocess.call("cd /home",shell=True)
-    os.chdir('/home')
+XDHISTFILE = os.path.join(HOME,'.xcd_history')
+HELP = '''\
+
+XCD is a quick directory changer. In practice work, 
+we generally switch between several commonly used directories. 
+When you use XCD to switch directories, XCD will remember these directories
+so that you can quickly switch to the history directory next time.
+
+Usage examples:
+xcd            : List the current stack and its indices.
+xcd somepath   : Add "somepath" to your directory stack and cd there.
+xcd -h         : Print this help.
+'''
+
 def addHistory(h):
     'add a cd history to .xd_history'
     try:
@@ -72,16 +76,6 @@ def getFullPath():
     pwd = os.environ.get('PWD') or os.getcwd()
     return pwd
 
-def addPath(path, hist):
-    hist.insert(0,path)
-    try:
-        with open(XDHISTFILE,'rw') as fd:
-            old = fd.readlines()
-            print(old)
-    except IOError:
-        pass
-
-
 def parsePath(s):
     if  s[0] == '/':
         return s
@@ -100,6 +94,13 @@ def main():
             pass
         hackCd(hist[n])
         updateHistory(hist[n])
+        return 0
+    if sys.argv[1][0] == '-':
+        if len(sys.argv) == 2:
+            arg = sys.argv[1]
+            if arg == '-h':
+                print(HELP)
+        return 1
     else:
         p = parsePath(sys.argv[1])
         if os.path.isdir(p):
