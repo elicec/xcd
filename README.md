@@ -1,4 +1,4 @@
-# xd
+# xcd
 
 XCD is a quick directory changer. In practice work, 
 we generally switch between several commonly used directories. 
