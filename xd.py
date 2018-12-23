@@ -2,6 +2,7 @@
 import fcntl, termios
 import os
 import sys
+import json
 XDHISTSIZE = int(os.environ.get('XDHISTSIZE') or 32)
 HOME = os.path.expanduser('~')
 XDHISTFILE = os.path.join(HOME,'.xcd_history')
@@ -18,23 +19,54 @@ xcd somepath   : Add "somepath" to your directory stack and cd there.
 xcd -h         : Print this help.
 '''
 
-def addHistory(h):
+def addHistory(hist):
     'add a cd history to .xd_history'
-    try:
-        with open(XDHISTFILE,'a') as fd:
-            fd.write(h+'\n')
-    except IOError:
-        pass
+    hl = []
+    paths = getHistory()
+    if h in paths:
+        paths.remove(h)
+    paths.insert(0,hist)
+    if len(paths) > XDHISTSIZE:
+        paths.pop()
+    for p in paths:
+        pd['path'] = p
+        hl.append(pd)
+    return hl
 
-def readHistory():
-    'read the xd_history'
-    hist = ['']
-    try:
-        with open(XDHISTFILE,'r') as fd:
-            hist = fd.readlines()
-    except IOError:
-        pass
-    return hist
+def writeHistory(h):
+    hl = addHistory(h)
+    data = readDateFile()
+    data['history'] = hl
+    writedDateFile)(data)
+
+def addBookMark(name, b):
+    'add a cd bookmark and return the bookmark dict'
+    bl = []
+    bm = getBookmark()
+    for b in bm:
+        if b['name'] == name:
+            continue
+        else:
+            bl.append(b)
+    t['name'] = name
+    t['path'] = b
+    bl.append(t)
+    return bl
+
+def getHistory():
+    'get history list '
+    hl = ['']
+    data = readDateFile()
+    hist = data['history']
+    for h in hist:
+        hl.append(h['path'])
+    return hl
+
+def getBookmark():
+    'get bookmark list'
+    data = readDateFile()
+    bl = data['bookmark']
+    return bl
 
 def printHistory(hist):
     'print the history to shell'
@@ -53,6 +85,25 @@ def updateHistory(h):
             fd.writelines(paths)
     except IOError:
         print('File Error!')
+
+def readDateFile():
+    'read the xd_history to json'
+    data = []
+    try:
+        with open(XDHISTFILE,'r') as fd:
+            data = json.load(fd)
+    except IOError:
+        pass
+    return data
+
+def writedDateFile(data):
+    'write the xd_history to json'
+    try:
+        with open(XDHISTFILE,'w') as fd:
+             json.dump(data,fd)
+    except IOError:
+        pass
+
 
 def updateList(h):
     paths = readHistory()
@@ -101,6 +152,9 @@ def main():
             if arg == '-h':
                 print(HELP)
         return 1
+        if len(sys.argv == 4):
+            arg = sys.argv[1]
+            if arg == '-b':
     else:
         p = parsePath(sys.argv[1])
         if os.path.isdir(p):
