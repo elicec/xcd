@@ -5,11 +5,11 @@ import sys
 import json
 XDHISTSIZE = int(os.environ.get('XDHISTSIZE') or 32)
 HOME = os.path.expanduser('~')
-XDHISTFILE = os.path.join(HOME,'.xcd_history')
+XDHISTFILE = os.path.join(HOME,'.xcd_data')
 HELP = '''\
 
-XCD is a quick directory changer. In practice work, 
-we generally switch between several commonly used directories. 
+XCD is a quick directory changer. In practice work,
+we generally switch between several commonly used directories.
 When you use XCD to switch directories, XCD will remember these directories
 so that you can quickly switch to the history directory next time.
 
@@ -23,12 +23,13 @@ def addHistory(hist):
     'add a cd history to .xd_history'
     hl = []
     paths = getHistory()
-    if h in paths:
-        paths.remove(h)
+    if hist in paths:
+        paths.remove(hist)
     paths.insert(0,hist)
     if len(paths) > XDHISTSIZE:
         paths.pop()
     for p in paths:
+        pd = {}
         pd['path'] = p
         hl.append(pd)
     return hl
@@ -37,27 +38,39 @@ def writeHistory(h):
     hl = addHistory(h)
     data = readDateFile()
     data['history'] = hl
-    writedDateFile)(data)
+    writedDateFile(data)
 
 def addBookMark(name, b):
     'add a cd bookmark and return the bookmark dict'
     bl = []
+    t = {}
     bm = getBookmark()
-    for b in bm:
-        if b['name'] == name:
-            continue
-        else:
-            bl.append(b)
+    if bm is not None:
+        for b in bm:
+            if b['name'] == name:
+                continue
+            else:
+                bl.append(b)
+
     t['name'] = name
     t['path'] = b
     bl.append(t)
     return bl
 
+def writeBookMark(name,b):
+    'write bookmark to data file'
+    bl = addBookMark(name,b)
+    data = readDateFile()
+    data['bookmark'] = bl
+    writedDateFile(data)
+
 def getHistory():
     'get history list '
-    hl = ['']
+    hl = []
     data = readDateFile()
-    hist = data['history']
+    hist = data.get('history')
+    if hist is None:
+        return hl
     for h in hist:
         hl.append(h['path'])
     return hl
@@ -65,8 +78,21 @@ def getHistory():
 def getBookmark():
     'get bookmark list'
     data = readDateFile()
-    bl = data['bookmark']
+    bl = data.get('bookmark')
     return bl
+
+def findBookMark(name):
+    bm = getBookmark()
+    for b in bm:
+        if b['name'] == name:
+            return b['path']
+    return ''
+
+def printBookMark():
+    bm = getBookmark()
+    for b in bm:
+        print("{name}:{path}".format(name=b['name'],path=b['path']))
+
 
 def printHistory(hist):
     'print the history to shell'
@@ -77,18 +103,9 @@ def printHistory(hist):
             # print('%s.' + h.replace('\n','') %(hist.index(h)))
             print("{num}.{path}".format(num=hist.index(h),path=h.replace('\n','')))
 
-def updateHistory(h):
-    'update the xd_history'
-    paths = updateList(h)
-    try:
-        with open(XDHISTFILE,'w') as fd:
-            fd.writelines(paths)
-    except IOError:
-        print('File Error!')
-
 def readDateFile():
     'read the xd_history to json'
-    data = []
+    data = {}
     try:
         with open(XDHISTFILE,'r') as fd:
             data = json.load(fd)
@@ -104,22 +121,10 @@ def writedDateFile(data):
     except IOError:
         pass
 
-
-def updateList(h):
-    paths = readHistory()
-    if h in paths:
-        paths.remove(h)
-    paths.insert(0,h)
-    if len(paths) > XDHISTSIZE:
-        paths.pop()
-    return paths
-
 def hackCd(dest):
     # use of this means that it only works in an interactive session
     # (and if the user types while it runs they could insert characters between the characters in 'text'!)
-    if dest.replace('\n','') == getFullPath():
-        return
-    t = "cd " + dest
+    t = "cd " + dest + "\n"
     for c in t:
         fcntl.ioctl(1, termios.TIOCSTI, c)
 
@@ -136,7 +141,7 @@ def parsePath(s):
 def main():
     if len(sys.argv) <= 1:
         n = 0
-        hist = readHistory()
+        hist = getHistory()
         printHistory(hist)
         num = raw_input('input the num(0):')
         try:
@@ -144,25 +149,40 @@ def main():
         except ValueError:
             pass
         hackCd(hist[n])
-        updateHistory(hist[n])
+        writeHistory(hist[n])
         return 0
     if sys.argv[1][0] == '-':
         if len(sys.argv) == 2:
             arg = sys.argv[1]
             if arg == '-h':
                 print(HELP)
-        return 1
-        if len(sys.argv == 4):
+                return 1
+            if arg == '-b':
+                printBookMark()
+        if len(sys.argv) == 4:
             arg = sys.argv[1]
             if arg == '-b':
+                print('test bookmark')
+                p = parsePath(sys.argv[3])
+                if os.path.isdir(p):
+                    p = os.path.normpath(p)
+                    writeBookMark(sys.argv[2],p)
+                else:
+                    print('invalid path')
+
     else:
         p = parsePath(sys.argv[1])
         if os.path.isdir(p):
-            p = os.path.normpath(p) + '\n'
+            p = os.path.normpath(p)
             hackCd(p)
-            updateHistory(p)
+            writeHistory(p)
+        #maybe is a bookmark
         else:
-            print('invalid path')
+            path = findBookMark(sys.argv[1])
+            if path != '':
+                hackCd(path)
+            else:
+                print('invalid path')
 
 if __name__ == "__main__":
     main()
