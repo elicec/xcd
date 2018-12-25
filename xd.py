@@ -40,7 +40,7 @@ def writeHistory(h):
     data['history'] = hl
     writedDateFile(data)
 
-def addBookMark(name, b):
+def addBookMark(name, path):
     'add a cd bookmark and return the bookmark dict'
     bl = []
     t = {}
@@ -53,7 +53,7 @@ def addBookMark(name, b):
                 bl.append(b)
 
     t['name'] = name
-    t['path'] = b
+    t['path'] = path
     bl.append(t)
     return bl
 
