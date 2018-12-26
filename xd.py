@@ -115,7 +115,7 @@ def printBookMark():
 def printHistory(hist):
     'print the history to shell'
     if len(hist) == 0:
-        print('have no cd history\n')
+        print('have no xcd history')
     else:
         for h in hist:
             # print('%s.' + h.replace('\n','') %(hist.index(h)))
