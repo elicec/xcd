@@ -13,11 +13,20 @@ we generally switch between several commonly used directories.
 When you use XCD to switch directories, XCD will remember these directories
 so that you can quickly switch to the history directory next time.
 
-Usage examples:
-xcd            : List the current stack and its indices.
-xcd somepath   : Add "somepath" to your directory stack and cd there.
-xcd -h         : Print this help.
+Usage :
+xcd                   : List the current stack and its indices.
+xcd <path,bookmark>   : cd path or bookmark,and add path to cd history
+xcd -b <name><path>   : Add a bookmark path with name
+xcd -B <name>         : Remove a bookmark
+xcd -h                : Print this help.
 '''
+
+CEND = '\33[0m'
+CYELLOW = '\33[93m'
+CRED = '\33[91m'
+CGREEN = '\33[92m'
+CBLUE = '\33[96m'
+CREDBG = '\33[41m'
 
 def addHistory(hist):
     'add a cd history to .xd_history'
@@ -109,17 +118,17 @@ def findBookMark(name):
 def printBookMark():
     bm = getBookmark()
     for b in bm:
-        print("{name}:{path}".format(name=b['name'],path=b['path']))
+        print(CGREEN + "{name}:{path}".format(name=b['name'],path=b['path']) + CEND)
 
 
 def printHistory(hist):
     'print the history to shell'
     if len(hist) == 0:
-        print('have no xcd history')
+        print(CYELLOW + 'have no xcd history' + CEND)
     else:
         for h in hist:
             # print('%s.' + h.replace('\n','') %(hist.index(h)))
-            print("{num}.{path}".format(num=hist.index(h),path=h.replace('\n','')))
+            print(CGREEN + "{num}.{path}".format(num=hist.index(h),path=h.replace('\n','')) + CEND)
 
 def readDateFile():
     'read the xd_history to json'
@@ -162,19 +171,19 @@ def main():
         hist = getHistory()
         if len(hist) != 0:
             printHistory(hist)
-            num = raw_input('input the num(0):')
+            num = raw_input(CBLUE + 'input the num(0):' + CEND)
             try:
                 n = int(num)
             except ValueError:
-                print('input num error')
+                print(CREDBG + 'input num error' + CEND)
                 return 1
             if n < len(hist) and n >= 0:
                 hackCd(hist[n])
                 writeHistory(hist[n])
             else:
-                print('input num error')
+                print(CREDBG + 'input num error' + CEND)
         else:
-            print('have no xcd history')
+            print(CYELLOW + 'have no xcd history' + CEND)
         return 0
     if sys.argv[1][0] == '-':
         if len(sys.argv) == 2:
@@ -192,7 +201,7 @@ def main():
                     p = os.path.normpath(p)
                     writeBookMark(sys.argv[2],p)
                 else:
-                    print('invalid path')
+                    print(CREDBG + 'invalid path' + CEND)
         if len(sys.argv) == 3:
             arg = sys.argv[1]
             if arg == '-B':
@@ -210,7 +219,7 @@ def main():
             if path != '':
                 hackCd(path)
             else:
-                print('invalid path')
+                print(CREDBG + 'invalid path' + CEND)
 
 if __name__ == "__main__":
     main()
