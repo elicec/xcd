@@ -57,6 +57,24 @@ def addBookMark(name, path):
     bl.append(t)
     return bl
 
+def removeBookMark(name):
+    'remove a bookmark'
+    bl = []
+    find = False
+    bm = getBookmark()
+    if bm is not None:
+        for b in bm:
+            if b['name'] == name:
+                find = True
+                continue
+            else:
+                bl.append(b)
+    if find is True:
+        data = readDateFile()
+        data['bookmark'] = bl
+        writedDateFile(data)
+    return find
+
 def writeBookMark(name,b):
     'write bookmark to data file'
     bl = addBookMark(name,b)
@@ -162,13 +180,16 @@ def main():
         if len(sys.argv) == 4:
             arg = sys.argv[1]
             if arg == '-b':
-                print('test bookmark')
                 p = parsePath(sys.argv[3])
                 if os.path.isdir(p):
                     p = os.path.normpath(p)
                     writeBookMark(sys.argv[2],p)
                 else:
                     print('invalid path')
+        if len(sys.argv) == 3:
+            arg = sys.argv[1]
+            if arg == '-B':
+                removeBookMark(sys.argv[2])
 
     else:
         p = parsePath(sys.argv[1])
