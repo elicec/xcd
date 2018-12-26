@@ -9,6 +9,10 @@ Usage examples:
 
 **xcd**            : List the current stack and its indices.
 
-**xcd somepath**   : Add "somepath" to your directory stack and cd there.
+**xcd <path,bookmark>**   :if is path, Add "path" to your directory stack and cd there,if is a bookmark,cd here.
+
+**xcd -b <name> <path>**   : Add "path" to your bookmark with the name .
+
+**xcd -B <name> **   : remove a  bookmark with the name .
 
 **xcd -h**         : Print this help.
