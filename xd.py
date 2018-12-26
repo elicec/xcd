@@ -160,14 +160,21 @@ def main():
     if len(sys.argv) <= 1:
         n = 0
         hist = getHistory()
-        printHistory(hist)
-        num = raw_input('input the num(0):')
-        try:
-            n = int(num)
-        except ValueError:
-            pass
-        hackCd(hist[n])
-        writeHistory(hist[n])
+        if len(hist) != 0:
+            printHistory(hist)
+            num = raw_input('input the num(0):')
+            try:
+                n = int(num)
+            except ValueError:
+                print('input num error')
+                return 1
+            if n < len(hist) and n >= 0:
+                hackCd(hist[n])
+                writeHistory(hist[n])
+            else:
+                print('input num error')
+        else:
+            print('have no xcd history')
         return 0
     if sys.argv[1][0] == '-':
         if len(sys.argv) == 2:
