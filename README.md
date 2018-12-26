@@ -13,6 +13,6 @@ Usage examples:
 
 **xcd -b <name> <path>**   : Add "path" to your bookmark with the name .
 
-**xcd -B <name> **   : remove a  bookmark with the name .
+**xcd -B <name>**   : remove a  bookmark with the name .
 
 **xcd -h**         : Print this help.
