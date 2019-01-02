@@ -172,6 +172,8 @@ def main():
         if len(hist) != 0:
             printHistory(hist)
             num = raw_input(CBLUE + 'input the num(0):' + CEND)
+            if num == '':
+                num = '0'
             try:
                 n = int(num)
             except ValueError:
