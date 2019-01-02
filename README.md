@@ -1,4 +1,4 @@
-# xcd
+# xcd            [![Travis Status](https://travis-ci.org/elicec/xcd.svg?branch=master)](https://travis-ci.org/elicec/xcd)
 
 
 ## Introduce
