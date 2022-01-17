@@ -17,6 +17,7 @@ Usage :
 xcd                   : List the current stack and its indices.
 xcd <path,bookmark>   : cd path or bookmark,and add path to cd history
 xcd -b <name><path>   : Add a bookmark path with name
+xcd -b                : show bookmark list
 xcd -B <name>         : Remove a bookmark
 xcd -h                : Print this help.
 '''
